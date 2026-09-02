@@ -1,7 +1,7 @@
 from time import timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import desc
+
 from datetime import datetime as dt, timedelta, timezone
 from db.connection import get_db
 from models import UserPrompt, ChatResponse
@@ -22,10 +22,10 @@ def chat(user_prompt:UserPrompt, db:Session=Depends(get_db), user:str=Depends(ge
     curr_user = db.query(models.Users).filter(models.Users.email==user).first()
     if not curr_user:
         raise HTTPException(status_code=404, detail="You are not a registered")
-    curr_conv = db.query(models.ConversationTable).filter(models.Users.userId == models.ConversationTable.userId).first()
+    curr_conv = db.query(models.Conversations).filter(curr_user.userId == models.Conversations.userId).first()
     now= dt.now(timezone.utc)
     if not curr_conv:
-        curr_conv = models.ConversationTable(request_count=1, userId=curr_user.userId)
+        curr_conv = models.Conversations(request_count=1, userId=curr_user.userId)
         db.add(curr_conv)
     elif (now-curr_conv.requested_At)>timedelta(seconds=WINDOW_TIME_IN_SEC):
         curr_conv.request_count = 1
@@ -38,10 +38,30 @@ def chat(user_prompt:UserPrompt, db:Session=Depends(get_db), user:str=Depends(ge
        curr_conv.request_count+=1
     db.commit()
     db.refresh(curr_conv)
+
+
     try:
-        # response = ollama.chat(model="llama3", messages=[{"role":"user", "content":user_prompt.prompt}])
-        print()
+        # Adding prompt from the user, and storing it in the Database.
+        new_rec = models.Messages(role="user", content=user_prompt.prompt, conversationId=curr_conv.conversationId)
+        db.add(new_rec)
+        db.commit()
+        db.refresh(new_rec)
+
+        # Fetching all the messages from the database for context.
+        results = db.query(models.Messages).filter(models.Messages.conversationId == curr_conv.conversationId).all()
+        messages = [{"role":message.role, "content":message.content} for message in results]
+
+        # Ollama generates response and then response in stored in the Database.
+
+        response = ollama.chat(model="llama3", messages=messages)
+        new_res = models.Messages(role=response["message"]["role"], content=response["message"]["content"], conversationId=curr_conv.conversationId)
+        db.add(new_res)
+        db.commit()
+        db.refresh(new_res)
+
+
+
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Ollama request failed")
 
-    # return ChatResponse(reply=response["message"]["content"])
+    return ChatResponse(reply=response["message"]["content"])
