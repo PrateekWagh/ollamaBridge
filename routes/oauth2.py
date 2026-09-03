@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 SECRET_KEY = os.environ["SECRET_KEY"]
 ALGORITHM = os.environ["ALGORITHM"]
-EXPIRE_IN = os.environ["EXPIRE_IN"]
+EXPIRE_IN = int(os.environ["EXPIRE_IN"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 def create_token(data:dict):
