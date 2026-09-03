@@ -505,9 +505,7 @@ A typical interaction with OllamaBridge follows this flow:
 
 ---
 
-## 📸 Screenshots
 
-Screenshots and a short demonstration video will be added here to showcase the application interface and chatbot functionality.
 
 ---
 
