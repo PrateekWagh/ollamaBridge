@@ -1,6 +1,6 @@
 # OllamaBridge
 
-OllamaBridge is a general-purpose LLM chat application built with Python, FastAPI, PostgreSQL, SQLAlchemy, and Ollama.
+**OllamaBridge** is a general-purpose LLM chat application built with Python, FastAPI, PostgreSQL, SQLAlchemy, and Ollama.
 
 The application provides an authenticated conversational interface where users can interact with a Llama language model. Conversations and messages are persisted in PostgreSQL, allowing the chatbot to maintain context from previous messages within the same conversation thread.
 
@@ -26,9 +26,11 @@ The project focuses on building an API-driven LLM application with authenticatio
 
 > **Current limitation:** OllamaBridge currently supports a single conversation thread and does not yet provide multiple independent conversations.
 
+---
 
 ## 🏗️ Architecture
 
+```text
                          ┌─────────────────────┐
                          │      User           │
                          └──────────┬──────────┘
@@ -61,12 +63,11 @@ The project focuses on building an API-driven LLM application with authenticatio
           │ Conversations    │               │ Language Model  │
           │ Messages         │               │                 │
           └──────────────────┘               └─────────────────┘
-
-
+```
 
 ### Request Flow
 
-
+```text
 User
   │
   ▼
@@ -92,7 +93,9 @@ Store message and response
   │
   ▼
 Return response to Streamlit
+```
 
+---
 
 ## 🛠️ Tech Stack
 
@@ -109,10 +112,11 @@ Return response to Streamlit
 | **Llama**      | Language model                   |
 | **Streamlit**  | Frontend interface               |
 
+---
 
 ## 📁 Project Structure
 
-
+```text
 OllamaBridge/
 │
 ├── db/
@@ -133,6 +137,9 @@ OllamaBridge/
 ├── .env.example             # Environment variable template
 ├── .gitignore               # Git ignored files
 └── README.md                # Project documentation
+```
+
+---
 
 ## 🔐 Authentication
 
@@ -140,7 +147,7 @@ OllamaBridge uses **JWT-based authentication** to protect access to the chatbot.
 
 The authentication flow is:
 
-
+```text
 ┌──────────────┐
 │     User     │
 └──────┬───────┘
@@ -171,7 +178,7 @@ The authentication flow is:
 │ Protected Chat  │
 │    Endpoint     │
 └─────────────────┘
-
+```
 
 After a successful login, the application generates a JWT token. The token is then used to authenticate requests to protected endpoints.
 
@@ -183,13 +190,13 @@ PostgreSQL is used to persist application data, with SQLAlchemy providing the OR
 
 The current database consists of three primary entities:
 
-
+```text
 User
  │
  └────── Conversation
              │
              └────── Message
-
+```
 
 ### User
 
@@ -213,7 +220,7 @@ OllamaBridge uses **Ollama** to run the Llama language model locally.
 
 The FastAPI backend communicates with Ollama to generate responses:
 
-
+```text
 FastAPI
    │
    ▼
@@ -224,7 +231,7 @@ Llama
    │
    ▼
 Generated Response
-
+```
 
 When a user sends a message, the backend can retrieve the existing conversation context from PostgreSQL and provide it to the LLM along with the new message.
 
@@ -246,9 +253,9 @@ OllamaBridge currently exposes three primary API endpoints.
 
 Creates a new user account.
 
-
+```text
 POST /signup
-
+```
 
 The submitted user information is validated using Pydantic and stored in PostgreSQL.
 
@@ -256,9 +263,9 @@ The submitted user information is validated using Pydantic and stored in Postgre
 
 Authenticates an existing user.
 
-
+```text
 POST /login
-
+```
 
 After successful authentication, the API returns a JWT token that can be used to access protected endpoints.
 
@@ -266,7 +273,9 @@ After successful authentication, the API returns a JWT token that can be used to
 
 Sends a user message to the chatbot.
 
+```text
 POST /chat
+```
 
 The endpoint:
 
@@ -283,7 +292,9 @@ The endpoint:
 
 OllamaBridge currently limits requests to:
 
+```text
 5 requests per minute
+```
 
 This provides basic protection against excessive requests and helps control the number of requests sent to the locally hosted LLM.
 
@@ -319,7 +330,7 @@ Example:
 ```env
 DATABASE_URL=your_postgresql_connection_string
 SECRET_KEY=your_jwt_secret
-OLLAMA_URL=http://localhost
+OLLAMA_URL=http://localhost:11434
 EXPIRE_IN=30
 ```
 
@@ -341,7 +352,7 @@ A `.env.example` file can be committed instead:
 ```env
 DATABASE_URL=
 SECRET_KEY=
-OLLAMA_URL=http://localhost
+OLLAMA_URL=http://localhost:11434
 EXPIRE_IN=30
 ```
 
